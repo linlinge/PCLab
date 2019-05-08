@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,6 +17,7 @@ TEMPLATE = app
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+QT += core gui xml opengl
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -37,14 +39,23 @@ HEADERS += \
 FORMS += \
         pcviewer.ui
 
+# eigen3
 INCLUDEPATH += /usr/include/eigen3
 
+# libCGAL
+#INCLUDEPATH += /usr/local/include/CGAL
+#LIBS += /usr/local/lib/libCGAL*.so
+#LIBS +=-lCGAL -lCGAL_Core -lgmp
+
+# vtk
 INCLUDEPATH += /usr/include/vtk-6.3
 LIBS += /usr/lib/x86_64-linux-gnu/libvtk*.so
 
+# boost
 INCLUDEPATH += /usr/include/boost
 LIBS += /usr/lib/x86_64-linux-gnu/libboost_*.so
 
+# pcl
 INCLUDEPATH += /usr/include/pcl-1.8
 LIBS += /usr/lib/x86_64-linux-gnu/libpcl_*.so
 

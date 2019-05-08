@@ -9,6 +9,13 @@ PCViewer::PCViewer(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowState(Qt::WindowMaximized);
+    // add progress bar
+    progress_bar_=new QProgressBar();
+    progress_bar_->setTextVisible(false);
+    progress_bar_->setRange(0,100);
+    ui->statusBar->addWidget(progress_bar_);
+
+
 
     // load config file
     config = new QSettings("config.ini",QSettings::IniFormat);
@@ -23,9 +30,9 @@ PCViewer::PCViewer(QWidget *parent) :
     // Setup the cloud pointer
     cloud_.reset (new pcl::PointCloud<pcl::PointXYZRGBA>);
     // The number of points in the cloud
-    pcl::io::loadPLYFile<pcl::PointXYZRGBA>("/home/henry/Desktop/4_Mimosa.ply", *cloud_);
+    pcl::io::loadPLYFile<pcl::PointXYZRGBA>("/home/henry/datasets/fused.ply", *cloud_);
 
-
+    progress_bar_->setValue(20);
     // Set up the QVTK window
     viewer_.reset (new pcl::visualization::PCLVisualizer ("viewer", false));
     viewer_->setBackgroundColor (0.1, 0.1, 0.1);
@@ -34,9 +41,13 @@ PCViewer::PCViewer(QWidget *parent) :
 
     // load file
     //设置点云颜色，该处为单一颜色设置
+    progress_bar_->setValue(30);
+
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> single_color(cloud_, 255, 255, 255);
     viewer_->addPointCloud (cloud_,single_color, "cloud");
-    ui->widget->update ();
+    ui->widget->update();
+    progress_bar_->setValue(100);
+
 }
 
 PCViewer::~PCViewer()
@@ -58,6 +69,14 @@ void PCViewer::on_actionColor_changed()
 
 void PCViewer::colorCloudDistances (int color_mode)
 {
+
+    if(color_mode==0)
+    {
+        pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> single_color(cloud_, 255, 255, 255);
+        viewer_->addPointCloud (cloud_,single_color, "cloud");
+        ui->widget->update ();
+        return;
+    }
   // Find the minimum and maximum values along the selected axis
   double min, max;
   min = cloud_->points[0].x;
@@ -78,6 +97,9 @@ void PCViewer::colorCloudDistances (int color_mode)
 
   if (min == max)  // In case the cloud is flat on the chosen direction (x,y or z)
     lut_scale = 1.0;  // Avoid rounding error in boost
+
+
+
 
   for (pcl::PointCloud<pcl::PointXYZRGBA>::iterator cloud_it = cloud_->begin (); cloud_it != cloud_->end (); ++cloud_it)
   {
@@ -109,6 +131,7 @@ void PCViewer::LoadFile()
 {
     // You might want to change "/home/" if you're not on an *nix platform
     QString filename = QFileDialog::getOpenFileName (this, tr ("Open point cloud"), "/home/", tr ("Point cloud data (*.pcd *.ply)"));
+    progress_bar_->setValue(10);
 
     PCL_INFO("File chosen: %s\n", filename.toStdString ().c_str ());
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_tmp (new pcl::PointCloud<pcl::PointXYZRGBA>);
@@ -122,12 +145,15 @@ void PCViewer::LoadFile()
     else
       return_status = pcl::io::loadPLYFile (filename.toStdString (), *cloud_tmp);
 
+    progress_bar_->setValue(20);
+
     if (return_status != 0)
     {
       PCL_ERROR("Error reading point cloud %s\n", filename.toStdString ().c_str ());
       return;
     }
 
+    progress_bar_->setValue(30);
     // If point cloud contains NaN values, remove them before updating the visualizer point cloud
     if (cloud_tmp->is_dense)
       pcl::copyPointCloud (*cloud_tmp, *cloud_);
@@ -142,6 +168,7 @@ void PCViewer::LoadFile()
     viewer_->updatePointCloud (cloud_, "cloud");
     viewer_->resetCamera ();
     ui->widget->update ();
+    progress_bar_->setValue(100);
 }
 
 void PCViewer::on_actionPassThroughFilter_triggered()

@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include "global.h"
+#include "QProgressBar"
 
 namespace Ui {
 class PCViewer;
@@ -22,6 +23,7 @@ public:
 private:
     Ui::PCViewer *ui;
     QString filename_;
+    QProgressBar* progress_bar_;
 
 protected:
   /** @brief The PCL visualizer object */
